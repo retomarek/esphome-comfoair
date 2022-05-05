@@ -36,6 +36,8 @@ static const uint8_t COMFOAIR_GET_BOARD_VERSION_LENGTH = 14;
 static const uint8_t COMFOAIR_SET_RS232_MODE_REQUEST = 0x9b;
 static const uint8_t COMFOAIR_SET_RS232_MODE_RESPONSE = 0x9c;
 static const uint8_t COMFOAIR_SET_RS232_MODE_LENGTH = 0x01;
+static const uint8_t COMFOAIR_SET_RS232_MODE_PC_MASTER = 0x03;
+static const uint8_t COMFOAIR_SET_RS232_MODE_PC_LOG = 0x04;
 
 static const uint8_t COMFOAIR_GET_INPUTS_REQUEST = 0x03;
 static const uint8_t COMFOAIR_GET_INPUTS_RESPONSE = 0x04;
@@ -120,35 +122,54 @@ static const uint8_t COMFOAIR_SET_OUTPUTS_REQUEST = 0x05;
 static const uint8_t COMFOAIR_SET_ANALOG_OUTPUTS_REQUEST = 0x07;
 static const uint8_t COMFOAIR_SET_VALVES_REQUEST = 0x09;
 
-class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTDevice {
+// CC-Ease emulation
+static const uint8_t COMFOAIR_GET_CC_EASE_DATA_REQUEST = 0x33;
+static const uint8_t COMFOAIR_GET_CC_EASE_DATA_RESPONSE = 0x3c;
+static const uint8_t COMFOAIR_SET_CC_EASE_BUTTON_REQUEST = 0x37;
+static const uint8_t COMFOAIR_SET_CC_EASE_BUTTON_LENGTH = 0x07;
+
+class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, PollingComponent, uart::UARTDevice {
  public:
 
+  void setup() override {
+      register_service(&ComfoAirComponent::control_set_operation_mode, "climate_set_operation_mode",
+                     {"exhaust_fan", "supply_fan"});
+  }
+  
+  void control_set_operation_mode(bool exhaust, bool supply) {
+    ESP_LOGI(TAG, "Setting operation mode target exhaust: %i, supply: %i", exhaust, supply);
+    {
+      this->exhaust_set_active = exhaust;
+      this->supply_set_active = supply;
+      change_operation_mode();
+    }
+  }
+
   // Poll every 600ms
-  ComfoAirComponent(UARTComponent *parent) : Climate("comfoair"), PollingComponent(600), UARTDevice(parent) { }
+  ComfoAirComponent(UARTComponent *parent) : PollingComponent(3000), UARTDevice(parent) { }
 
   /// Return the traits of this controller.
   climate::ClimateTraits traits() override {
     auto traits = climate::ClimateTraits();
-    traits.set_supports_current_temperature(false);
+    traits.set_supports_current_temperature(true);
     traits.set_supported_modes({
       climate::CLIMATE_MODE_FAN_ONLY
     });
     traits.set_supports_two_point_target_temperature(false);
     traits.set_supported_presets({
         climate::CLIMATE_PRESET_HOME,
-    }); 
+    });
     traits.set_supports_action(false);
     traits.set_visual_min_temperature(12);
     traits.set_visual_max_temperature(29);
     traits.set_visual_temperature_step(1);
     traits.set_supported_fan_modes({
-      climate::CLIMATE_FAN_FOCUS,
       climate::CLIMATE_FAN_AUTO,
       climate::CLIMATE_FAN_LOW,
       climate::CLIMATE_FAN_MEDIUM,
       climate::CLIMATE_FAN_HIGH,
       climate::CLIMATE_FAN_OFF,
-    }); 
+    });
     return traits;
   }
 
@@ -159,10 +180,6 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
 
       this->fan_mode = *call.get_fan_mode();
       switch (this->fan_mode.value()) {
-        case climate::CLIMATE_FAN_FOCUS:
-          level = 0x05;
-          break;
-
         case climate::CLIMATE_FAN_HIGH:
           level = 0x04;
           break;
@@ -180,6 +197,7 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
           break;
         case climate::CLIMATE_FAN_ON:
         case climate::CLIMATE_FAN_MIDDLE:
+        case climate::CLIMATE_FAN_FOCUS:
         case climate::CLIMATE_FAN_DIFFUSE:
         default:
           level = -1;
@@ -220,7 +238,14 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
   }
 
   void update() override {
+    uint8_t command[COMFOAIR_SET_RS232_MODE_LENGTH] = {COMFOAIR_SET_RS232_MODE_PC_MASTER};
     switch(update_counter_) {
+      case -5:
+        // Wait for initial CC_EASE icon data before disabling it
+        break;
+      case -4:
+        this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command, sizeof(command));
+        break;
       case -3:
         this->write_command_(COMFOAIR_GET_BOOTLOADER_VERSION_REQUEST, nullptr, 0);
         break;
@@ -250,6 +275,8 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
         break;
       case 6:
         get_bypass_control_status_();
+        break;
+      default:
         break;
     }
 
@@ -281,16 +308,40 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
   }
 
   float get_setup_priority() const override { return setup_priority::DATA; }
-
+  
   void reset_filter(void) {
     uint8_t reset_cmd[COMFOAIR_SET_RESET_LENGTH] = {0, 0, 0, 1};
     this->write_command_(COMFOAIR_SET_RESET_REQUEST, reset_cmd, sizeof(reset_cmd));
-	}
+  }
 
  protected:
 
+  void change_operation_mode() {
+    // Everything set as it should, nothing to do
+    if (exhaust_is_active == exhaust_set_active && supply_is_active == supply_set_active) {
+      return;
+    }
+    
+    ESP_LOGD(TAG, "Changing operation mode");
+    // Switch to PC_LOG mode so we can send CC_EASE commands
+    uint8_t command_data[COMFOAIR_SET_RS232_MODE_LENGTH] = {COMFOAIR_SET_RS232_MODE_PC_LOG};
+    this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command_data, sizeof(command_data));
+    delay(100);
+    
+    // Send button mode for 1ms
+    uint8_t button_command_data[COMFOAIR_SET_CC_EASE_BUTTON_LENGTH] = {0,1,0,0,0,0,0};
+    this->write_command_(COMFOAIR_SET_CC_EASE_BUTTON_REQUEST, button_command_data, sizeof(button_command_data));
+    
+    // Switch back to PC_MASTER mode to disable CC_EASE, this might take multiple tries, CC_EASE is chatty :/
+    for (uint8_t i = 0; i < 3; i++) {
+      delay(50);
+      command_data[0] = COMFOAIR_SET_RS232_MODE_PC_MASTER;
+      this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command_data, sizeof(command_data));
+    }
+  }
+
   void set_level_(int level) {
-    if (level < 0 || level > 5) {
+    if (level < 0 || level > 4) {
       ESP_LOGI(TAG, "Ignoring invalid level request: %i", level);
       return;
     }
@@ -340,7 +391,7 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
     return sum + 0xad;
   }
 
-  optional<bool> check_byte_() const {
+  optional<bool> check_byte_() {
     uint8_t index = this->data_index_;
     uint8_t byte = this->data_[index];
 
@@ -372,14 +423,16 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
     }
 
     if (index < COMFOAIR_MSG_HEAD_LENGTH + data_length) {
+      if (byte == COMFOAIR_MSG_PREFIX && this->data_[index-1] == COMFOAIR_MSG_PREFIX) {
+          this->data_index_--;
+      }
       return true;
     }
-
     if (index == COMFOAIR_MSG_HEAD_LENGTH + data_length) {
       // checksum is without checksum bytes
       uint8_t checksum = comfoair_checksum_(this->data_ + 2, COMFOAIR_MSG_HEAD_LENGTH + data_length - 2);
+      //ESP_LOGW(TAG, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", this->data_[0], this->data_[1], this->data_[2], this->data_[3], this->data_[4], this->data_[5], this->data_[6], this->data_[7], this->data_[8], this->data_[9], this->data_[10], this->data_[11], this->data_[12], this->data_[13], this->data_[14], this->data_[15], this->data_[16], this->data_[17], this->data_[18]);
       if (checksum != byte) {
-        //ESP_LOGW(TAG, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", this->data_[0], this->data_[1], this->data_[2], this->data_[3], this->data_[4], this->data_[5], this->data_[6], this->data_[7], this->data_[8], this->data_[9], this->data_[10]);
         ESP_LOGW(TAG, "ComfoAir Checksum doesn't match: 0x%02X!=0x%02X", byte, checksum);
         return false;
       }
@@ -392,6 +445,7 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
 
     if (index == COMFOAIR_MSG_HEAD_LENGTH + data_length + 2) {
       if (byte != COMFOAIR_MSG_TAIL) {
+        ESP_LOGW(TAG, "Message tail couldn't be found, last byte was %02X", byte);
         return false;
       }
     }
@@ -430,6 +484,7 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
         }
       case COMFOAIR_GET_VALVE_STATUS_RESPONSE: {
         if (this->is_bypass_valve_open != nullptr) {
+          ESP_LOGD(TAG, "'Bypass Valve' open: %i", msg[0] != 0);
           this->is_bypass_valve_open->publish_state(msg[0] != 0);
         }
         if (this->is_preheating != nullptr) {
@@ -448,6 +503,7 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
           this->bypass_correction->publish_state(msg[4]);
         }
         if (this->is_summer_mode != nullptr) {
+          ESP_LOGD(TAG, "'Summer mode': %i", msg[6] != 0);
           this->is_summer_mode->publish_state(msg[6] != 0);
         }
         break;
@@ -476,6 +532,10 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
 
         if (this->enthalpy_temperature != nullptr) {
           this->enthalpy_temperature->publish_state((float) msg[0] / 2.0f - 20.0f);
+        }
+        
+        if (this->enthalpy_humidity != nullptr) {
+          this->enthalpy_humidity->publish_state(msg[1]);
         }
 
         break;
@@ -567,6 +627,13 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
 
         break;
       }
+      case COMFOAIR_GET_CC_EASE_DATA_RESPONSE: {
+          ESP_LOGD(TAG, "CC_EASE Icon Data exhaust: %i, supply: %i", !!(msg[9] & 0x80), !!(msg[9] & 0x40));
+          exhaust_is_active = !!(msg[9] & 0x80);
+          supply_is_active = !!(msg[9] & 0x40);
+          change_operation_mode();
+          break;
+      }
     }
   }
 
@@ -642,13 +709,18 @@ class ComfoAirComponent : public climate::Climate, PollingComponent, uart::UARTD
 
   uint8_t data_[30];
   uint8_t data_index_{0};
-  int8_t update_counter_{-3};
+  int8_t update_counter_{-5};
+  volatile bool exhaust_is_active = true;
+  volatile bool supply_is_active = true;
+  bool exhaust_set_active = true;
+  bool supply_set_active = true;
 
   uint8_t bootloader_version_[13]{0};
   uint8_t firmware_version_[13]{0};
   uint8_t connector_board_version_[14]{0};
 
 public:
+
   sensor::Sensor *fan_supply_air_percentage{nullptr};
   sensor::Sensor *fan_exhaust_air_percentage{nullptr};
   sensor::Sensor *fan_speed_supply{nullptr};
@@ -660,6 +732,7 @@ public:
   sensor::Sensor *return_air_temperature{nullptr};
   sensor::Sensor *exhaust_air_temperature{nullptr};
   sensor::Sensor *enthalpy_temperature{nullptr};
+  sensor::Sensor *enthalpy_humidity{nullptr};
   sensor::Sensor *ewt_temperature{nullptr};
   sensor::Sensor *reheating_temperature{nullptr};
   sensor::Sensor *kitchen_hood_temperature{nullptr};
