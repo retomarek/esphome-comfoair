@@ -132,21 +132,29 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
  public:
 
   void setup() override {
-      register_service(&ComfoAirComponent::control_set_operation_mode, "climate_set_operation_mode",
-                     {"exhaust_fan", "supply_fan"});
+      register_service(&ComfoAirComponent::control_set_operation_mode, "climate_set_operation_mode", {"exhaust_fan", "supply_fan"});
   }
   
   void control_set_operation_mode(bool exhaust, bool supply) {
     ESP_LOGI(TAG, "Setting operation mode target exhaust: %i, supply: %i", exhaust, supply);
     {
-      this->exhaust_set_active = exhaust;
-      this->supply_set_active = supply;
-      change_operation_mode();
+      uint8_t command_data[COMFOAIR_SET_VENTILATION_LEVEL_LENGTH] = {
+          exhaust ? this->ventilation_levels_[0] : 0,
+          exhaust ? this->ventilation_levels_[2] : 0,
+          exhaust ? this->ventilation_levels_[4] : 0,
+          supply ? this->ventilation_levels_[1] : 0,
+          supply ? this->ventilation_levels_[3] : 0,
+          supply ? this->ventilation_levels_[5] : 0,
+          exhaust ? this->ventilation_levels_[6] : 0,
+          supply ? this->ventilation_levels_[7] : 0,
+          0x00
+      };
+      this->write_command_(COMFOAIR_SET_VENTILATION_LEVEL_REQUEST, command_data, sizeof(command_data));
     }
   }
 
-  // Poll every 600ms
-  ComfoAirComponent(UARTComponent *parent) : PollingComponent(3000), UARTDevice(parent) { }
+  // Poll every second
+  ComfoAirComponent(UARTComponent *parent) : PollingComponent(1000), UARTDevice(parent) { }
 
   /// Return the traits of this controller.
   climate::ClimateTraits traits() override {
@@ -240,9 +248,6 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
   void update() override {
     uint8_t command[COMFOAIR_SET_RS232_MODE_LENGTH] = {COMFOAIR_SET_RS232_MODE_PC_MASTER};
     switch(update_counter_) {
-      case -5:
-        // Wait for initial CC_EASE icon data before disabling it
-        break;
       case -4:
         this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command, sizeof(command));
         break;
@@ -315,31 +320,6 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
   }
 
  protected:
-
-  void change_operation_mode() {
-    // Everything set as it should, nothing to do
-    if (exhaust_is_active == exhaust_set_active && supply_is_active == supply_set_active) {
-      return;
-    }
-    
-    ESP_LOGD(TAG, "Changing operation mode");
-    // Switch to PC_LOG mode so we can send CC_EASE commands
-    uint8_t command_data[COMFOAIR_SET_RS232_MODE_LENGTH] = {COMFOAIR_SET_RS232_MODE_PC_LOG};
-    this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command_data, sizeof(command_data));
-    delay(100);
-    
-    // Send button mode for 1ms
-    uint8_t button_command_data[COMFOAIR_SET_CC_EASE_BUTTON_LENGTH] = {0,1,0,0,0,0,0};
-    this->write_command_(COMFOAIR_SET_CC_EASE_BUTTON_REQUEST, button_command_data, sizeof(button_command_data));
-    
-    // Switch back to PC_MASTER mode to disable CC_EASE, this might take multiple tries, CC_EASE is chatty :/
-    for (uint8_t i = 0; i < 3; i++) {
-      delay(50);
-      command_data[0] = COMFOAIR_SET_RS232_MODE_PC_MASTER;
-      this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command_data, sizeof(command_data));
-    }
-  }
-
   void set_level_(int level) {
     if (level < 0 || level > 4) {
       ESP_LOGI(TAG, "Ignoring invalid level request: %i", level);
@@ -543,6 +523,15 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
       case COMFOAIR_GET_VENTILATION_LEVEL_RESPONSE: {
 
         ESP_LOGD(TAG, "Level %02x", msg[8]);
+        ESP_LOGW(TAG, "Abw ab %i - Abw zu %i - Low ab %i - Low zu %i - Middle ab %i - Middle zu %i - High ab %i - High zu %i", msg[0], msg[3], msg[1], msg[4], msg[2], msg[5], msg[10], msg[11]);
+        if (msg[0]) this->ventilation_levels_[0] = msg[0];
+        if (msg[3]) this->ventilation_levels_[1] = msg[3];
+        if (msg[1]) this->ventilation_levels_[2] = msg[1];
+        if (msg[4]) this->ventilation_levels_[3] = msg[4];
+        if (msg[2]) this->ventilation_levels_[4] = msg[2];
+        if (msg[5]) this->ventilation_levels_[5] = msg[5];
+        if (msg[10]) this->ventilation_levels_[6] = msg[10];
+        if (msg[11]) this->ventilation_levels_[7] = msg[11];
 
         if (this->return_air_level != nullptr) {
           this->return_air_level->publish_state(msg[6]);
@@ -629,9 +618,6 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
       }
       case COMFOAIR_GET_CC_EASE_DATA_RESPONSE: {
           ESP_LOGD(TAG, "CC_EASE Icon Data exhaust: %i, supply: %i", !!(msg[9] & 0x80), !!(msg[9] & 0x40));
-          exhaust_is_active = !!(msg[9] & 0x80);
-          supply_is_active = !!(msg[9] & 0x40);
-          change_operation_mode();
           break;
       }
     }
@@ -709,11 +695,8 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
 
   uint8_t data_[30];
   uint8_t data_index_{0};
-  int8_t update_counter_{-5};
-  volatile bool exhaust_is_active = true;
-  volatile bool supply_is_active = true;
-  bool exhaust_set_active = true;
-  bool supply_set_active = true;
+  int8_t update_counter_{-4};
+  uint8_t ventilation_levels_[8];
 
   uint8_t bootloader_version_[13]{0};
   uint8_t firmware_version_[13]{0};
