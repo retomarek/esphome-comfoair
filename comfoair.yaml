@@ -1,14 +1,30 @@
-esphome:
-  name: esphome-comfoair
-  includes:
-    - comfoair.h
+substitutions:
+  node_name: "central-comfoair"
+  device_name: Central Comfoair
+  password: !secret wifi_password
 
-esp8266:
-  board: esp01_1m
+esphome:
+  name: $node_name
+  comment: $device_name
+  platform: ESP8266
+  board: nodemcu
+  includes:
+    - /config/custom_components/esphome-comfoair/comfoair.h
 
 wifi:
-  ssid: 'your-wifi-ssid-here'
-  password: 'put-your-wifi-password-here'
+  ssid: !secret wifi_ssid
+  password: ${password}
+  manual_ip:
+    static_ip: 192.168.178.52
+    gateway: 192.168.178.1
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${device_name}
+    password: ${password}
+
+captive_portal:
 
 # Disable uart logging
 logger:
@@ -16,11 +32,34 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: 'set-an-api-password-here'
+  encryption:
+    key: !secret api_encr_key
 
 ota:
-
+  password: ${password}
+  
+dallas:
+  - pin: GPIO14
+    update_interval: 30s
+  
 sensor:
+  - platform: dallas
+    address: 0x7c3c6df648592428
+    name: "Central Ventilation Temp AUL ESP8266"
+    accuracy_decimals: 1
+  - platform: dallas
+    address: 0xf13c5af6485cd628
+    name: "Central Ventilation Temp ZUL ESP8266"
+    accuracy_decimals: 1
+  - platform: dallas
+    address: 0x903c8bf6481f4328
+    name: "Central Ventilation Temp ABL ESP8266"
+    accuracy_decimals: 1
+  - platform: dallas
+    address: 0xac3c06f648338728
+    name: "Central Ventilation Temp FOL ESP8266"
+    accuracy_decimals: 1
+    
 binary_sensor:
 
 uart:
@@ -35,72 +74,97 @@ climate:
     auto ca = new esphome::comfoair::ComfoAirComponent(id(uart_bus));
     App.register_component(ca);
     
-    ca->outside_air_temperature = new Sensor("Outside Air");
+    ca->outside_air_temperature = new Sensor();
+    ca->outside_air_temperature->set_object_id("CA350 Outside Temp");
+    ca->outside_air_temperature->set_name("CA350 Outside Temp");
     ca->outside_air_temperature->set_unit_of_measurement("°C");
     ca->outside_air_temperature->set_accuracy_decimals(1);
     App.register_sensor(ca->outside_air_temperature);
     
-    ca->supply_air_temperature = new Sensor("Supply Air");
+    ca->supply_air_temperature = new Sensor();
+    ca->supply_air_temperature->set_object_id("CA350 Supply Temp");
+    ca->supply_air_temperature->set_name("CA350 Supply Temp");
     ca->supply_air_temperature->set_unit_of_measurement("°C");
     ca->supply_air_temperature->set_accuracy_decimals(1);
     App.register_sensor(ca->supply_air_temperature);
     
-    ca->return_air_temperature = new Sensor("Return Air");
+    ca->return_air_temperature = new Sensor();
+    ca->return_air_temperature->set_object_id("CA350 Return Temp");
+    ca->return_air_temperature->set_name("CA350 Return Temp");
     ca->return_air_temperature->set_unit_of_measurement("°C");
     ca->return_air_temperature->set_accuracy_decimals(1);
     App.register_sensor(ca->return_air_temperature);
     
-    ca->exhaust_air_temperature = new Sensor("Exhaust Air");
+    ca->exhaust_air_temperature = new Sensor();
+    ca->exhaust_air_temperature->set_object_id("CA350 Exhaust Temp");
+    ca->exhaust_air_temperature->set_name("CA350 Exhaust Temp");
     ca->exhaust_air_temperature->set_unit_of_measurement("°C");
     ca->exhaust_air_temperature->set_accuracy_decimals(1);
     App.register_sensor(ca->exhaust_air_temperature);
     
-    ca->fan_supply_air_percentage = new Sensor("Fan Supply Air");
+    ca->fan_supply_air_percentage = new Sensor();
+    ca->fan_supply_air_percentage->set_object_id("CA350 FanSu Perc");
+    ca->fan_supply_air_percentage->set_name("CA350 FanSu Perc");
     ca->fan_supply_air_percentage->set_unit_of_measurement("%");
     App.register_sensor(ca->fan_supply_air_percentage);
     
-    ca->fan_exhaust_air_percentage = new Sensor("Fan Exhaust Air");
+    ca->fan_exhaust_air_percentage = new Sensor();
+    ca->fan_exhaust_air_percentage->set_object_id("CA350 FanEx Perc");
+    ca->fan_exhaust_air_percentage->set_name("CA350 FanEx Perc");
     ca->fan_exhaust_air_percentage->set_unit_of_measurement("%");
     App.register_sensor(ca->fan_exhaust_air_percentage);
     
-    ca->fan_speed_supply = new Sensor("Fan Speed Supply");
+    ca->fan_speed_supply = new Sensor();
+    ca->fan_speed_supply->set_object_id("CA350 Supply Speed");
+    ca->fan_speed_supply->set_name("CA350 Supply Speed");
     ca->fan_speed_supply->set_unit_of_measurement("RPM");
     App.register_sensor(ca->fan_speed_supply);
     
-    ca->fan_speed_exhaust = new Sensor("Fan Speed Exhaust");
+    ca->fan_speed_exhaust = new Sensor();
+    ca->fan_speed_exhaust->set_object_id("CA350 Exhaust Speed");
+    ca->fan_speed_exhaust->set_name("CA350 Exhaust Speed");
     ca->fan_speed_exhaust->set_unit_of_measurement("RPM");
     App.register_sensor(ca->fan_speed_exhaust);
     
-    ca->return_air_level = new Sensor("Return Air Level");
+    ca->return_air_level = new Sensor();
+    ca->return_air_level->set_object_id("CA350 Return AirFl");
+    ca->return_air_level->set_name("CA350 Return AirFl");
     ca->return_air_level->set_unit_of_measurement("%");
     App.register_sensor(ca->return_air_level);
     
-    ca->supply_air_level = new Sensor("Supply Air Level");
+    ca->supply_air_level = new Sensor();
+    ca->supply_air_level->set_object_id("CA350 Supply AirFl");
+    ca->supply_air_level->set_name("CA350 Supply AirFl");
     ca->supply_air_level->set_unit_of_measurement("%");
     App.register_sensor(ca->supply_air_level);
     
     ca->is_bypass_valve_open = new BinarySensor();
-    ca->is_bypass_valve_open->set_name("Bypass Valve");
+    ca->is_bypass_valve_open->set_object_id("CA350 Bypass open");
+    ca->is_bypass_valve_open->set_name("CA350 Bypass open");
     App.register_binary_sensor(ca->is_bypass_valve_open);
     
     ca->is_preheating = new BinarySensor();
-    ca->is_preheating->set_name("Preheating");
+    ca->is_preheating->set_object_id("CA350 Preheating");
+    ca->is_preheating->set_name("CA350 Preheating");
     App.register_binary_sensor(ca->is_preheating);
     
     ca->is_supply_fan_active = new BinarySensor();
-    ca->is_supply_fan_active->set_name("Supply Fan");
+    ca->is_supply_fan_active->set_object_id("CA350 FanSu active");
+    ca->is_supply_fan_active->set_name("CA350 FanSu active");
     App.register_binary_sensor(ca->is_supply_fan_active);
     
     ca->is_filter_full = new BinarySensor();
-    ca->is_filter_full->set_name("Filter Full");
+    ca->is_filter_full->set_object_id("CA350 Filter");
+    ca->is_filter_full->set_name("CA350 Filter");
     App.register_binary_sensor(ca->is_filter_full);
     
     ca->is_summer_mode = new BinarySensor();
-    ca->is_summer_mode->set_name("Summer Mode");
+    ca->is_summer_mode->set_object_id("CA350 Summer Mode");
+    ca->is_summer_mode->set_name("CA350 Summer Mode");
     App.register_binary_sensor(ca->is_summer_mode);
     
     App.register_climate(ca);
     return {ca};
     
   climates:
-    - name: "put-yout-comfoair-name-here"
+    - name: "ComfoAir 350"
