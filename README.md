@@ -1,6 +1,8 @@
 # esphome-comfoair
 This is a fork of https://github.com/ItsEcholot/esphome-comfoair which originates in https://github.com/wichers/esphome-comfoair
 
+This implementation is great because it allows the supply air fan to be deactivated with a Home Assistant service call. This is great for cooling at night in summer when the windows are opened and the outside temperature is low enough.
+
 Changes in this fork:
 1. Adapted Code to work with ESPHome version 2023.8.1 (see https://github.com/esphome/issues/issues/4553):
    - removed sensor name in constructor e.g. `... = new Sensor("Comfoair Return Air Level")` -> `... = new Sensor()`
