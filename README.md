@@ -26,12 +26,13 @@ Attention, the schematic is not updated and does not include the four dallas sen
 
 ![Schematic](doc/schematic.png)
 ![T568B](doc/T568B.png)
-![RS232 protocol description comfoair](doc/protocol_description_ComfoAir_german.pdf)
+[RS232 protocol description comfoair](doc/protocol_description_ComfoAir_german.pdf)
 
 
 ### Assembly
 
-![Assembly top](doc/assembly_top.jpg)
+![Placement in box](doc/assembly1.jpg)
+![Board detail](doc/assembly2.jpg)
 
 ### Flash the ESP8266
 The WIFI Witty cloud Development Board consists of two pieces
