@@ -49,19 +49,19 @@ The ComfoAir temperature sensors were experiencing problems due to corroded cont
 ```yaml
 # Temperature Sensor Error Ventilation (if difference between sensors is detected)
 template:
-	- binary_sensor:
-			- name: central_ventilation_temperature_sensor_error
-				state: >
-					{% set error = {
-						"aul": ((states('sensor.ca350_outside_temp') | float(0) - states('sensor.central_ventilation_temp_aul_esp8266') | float(0)) | abs > 1),
-						"zul": ((states('sensor.ca350_supply_temp') | float(0) - states('sensor.central_ventilation_temp_zul_esp8266') | float(0)) | abs > 1),
-						"abl": ((states('sensor.ca350_return_temp') | float(0) - states('sensor.central_ventilation_temp_abl_esp8266') | float(0)) | abs > 1),
-						"fol": ((states('sensor.ca350_exhaust_temp') | float(0) - states('sensor.central_ventilation_temp_fol_esp8266') | float(0)) | abs > 1)
-					} %}
-					{% if (error.aul or error.zul or error.abl or error.fol) %} true {% else %} false {% endif %}
-				device_class: problem
-				icon: >
-					{% if is_state('binary_sensor.central_ventilation_temperature_sensor_error','on') %} mdi:thermometer-alert
-					{% else %} mdi:thermometer-check
-					{% endif %}
+  - binary_sensor:
+    - name: central_ventilation_temperature_sensor_error
+        state: >
+          {% set error = {
+            "aul": ((states('sensor.ca350_outside_temp') | float(0) - states('sensor.central_ventilation_temp_aul_esp8266') | float(0)) | abs > 1),
+            "zul": ((states('sensor.ca350_supply_temp') | float(0) - states('sensor.central_ventilation_temp_zul_esp8266') | float(0)) | abs > 1),
+            "abl": ((states('sensor.ca350_return_temp') | float(0) - states('sensor.central_ventilation_temp_abl_esp8266') | float(0)) | abs > 1),
+            "fol": ((states('sensor.ca350_exhaust_temp') | float(0) - states('sensor.central_ventilation_temp_fol_esp8266') | float(0)) | abs > 1)
+          } %}
+          {% if (error.aul or error.zul or error.abl or error.fol) %} true {% else %} false {% endif %}
+        device_class: problem
+        icon: >
+          {% if is_state('binary_sensor.central_ventilation_temperature_sensor_error','on') %} mdi:thermometer-alert
+          {% else %} mdi:thermometer-check
+          {% endif %}
 ```
