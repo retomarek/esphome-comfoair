@@ -69,3 +69,155 @@ template:
           {% endif %}
 ```
 
+## Dashboard Visualization
+
+![](doc/dashboard_visu.png)
+
+```yaml
+type: picture-elements
+image: local/comfoair/base.png
+elements:
+  - type: state-label
+    entity: sensor.ca350_fanex_perc
+    style:
+      top: 83%
+      left: 25%
+      color: black
+  - type: state-label
+    entity: sensor.ca350_fansu_perc
+    style:
+      top: 83%
+      left: 75%
+      color: black
+  - type: state-label
+    entity: sensor.ca350_return_temp
+    style:
+      top: 24%
+      left: 97%
+      color: darkred
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_ventilation_temp_abl_esp8266
+    style:
+      top: 31%
+      left: 97%
+      color: lightgrey
+      transform: translate(-100%, -50%)
+    transform: none
+  - type: state-label
+    entity: sensor.central_aqual
+    style:
+      top: 57%
+      left: 99%
+      color: darkorange
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_temp
+    style:
+      top: 49%
+      left: 97%
+      color: darkred
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.ca350_supply_temp
+    style:
+      top: 70%
+      left: 97%
+      color: darkred
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_ventilation_temp_zul_esp8266
+    style:
+      top: 77%
+      left: 97%
+      color: lightgrey
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.ca350_outside_temp
+    style:
+      top: 24%
+      left: 19%
+      color: '#4171b1'
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_ventilation_temp_aul_esp8266
+    style:
+      top: 31%
+      left: 19%
+      color: lightgrey
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_outside_temp
+    style:
+      top: 49%
+      left: 19%
+      color: '#4171b1'
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.ca350_exhaust_temp
+    style:
+      top: 70%
+      left: 19%
+      color: '#4171b1'
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: sensor.central_ventilation_temp_fol_esp8266
+    style:
+      top: 77%
+      left: 19%
+      color: lightgrey
+      transform: translate(-100%, -50%)
+  - type: state-label
+    entity: binary_sensor.ca350_summer_mode
+    prefix: 'Summer Mode: '
+    style:
+      top: 8%
+      left: 15%
+      color: black
+  - type: state-label
+    entity: binary_sensor.ca350_bypass_open
+    prefix: 'Bypass: '
+    style:
+      top: 8%
+      left: 50%
+      color: black
+  - type: state-label
+    entity: climate.comfoair_350
+    attribute: temperature
+    prefix: 'Cmf Temp: '
+    suffix: ' °C'
+    style:
+      top: 8%
+      left: 82%
+      color: black
+  - type: state-label
+    entity: climate.comfoair_350
+    attribute: fan_mode
+    style:
+      top: 32%
+      left: 50%
+      color: darkred
+  - type: state-label
+    entity: sensor.central_ventilation_heat_recovery_coefficient
+    prefix: 'Recovery Efficiency: '
+    style:
+      top: 88%
+      left: 50%
+      color: black
+  - type: state-label
+    entity: sensor.air_filter_days_remaining
+    prefix: 'Filterchange in '
+    style:
+      top: 95%
+      left: 70%
+      color: black
+  - type: state-label
+    entity: binary_sensor.ca350_filter
+    prefix: 'Filterstatus: '
+    style:
+      top: 95%
+      left: 30%
+      color: black
+
+```
+
