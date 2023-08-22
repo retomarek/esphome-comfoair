@@ -29,7 +29,8 @@ Attention, the schematic is not updated and does not include the four dallas sen
 ![Schematic](doc/schematic.png)
 ![T568B](doc/T568B.png)
 [RS232 protocol description comfoair](doc/protocol_description_ComfoAir_german.pdf)
-
+[Zehnder Comfoair 350 installer manual german](doc/comfoair350_installer_manual_de.pdf)
+[Zehnder Comfoair 350 installer manual english](doc/comfoair350_installer_manual_en.pdf)
 
 ### Assembly
 
@@ -67,3 +68,4 @@ template:
           {% else %} mdi:thermometer-check
           {% endif %}
 ```
+
