@@ -133,24 +133,31 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
 
   void setup() override {
       register_service(&ComfoAirComponent::control_set_operation_mode, "climate_set_operation_mode", {"exhaust_fan", "supply_fan"});
+      register_service(&ComfoAirComponent::control_reset_filter, "reset_filter");
   }
   
   void control_set_operation_mode(bool exhaust, bool supply) {
     ESP_LOGI(TAG, "Setting operation mode target exhaust: %i, supply: %i", exhaust, supply);
     {
       uint8_t command_data[COMFOAIR_SET_VENTILATION_LEVEL_LENGTH] = {
-          exhaust ? this->ventilation_levels_[0] : 0,
-          exhaust ? this->ventilation_levels_[2] : 0,
-          exhaust ? this->ventilation_levels_[4] : 0,
-          supply ? this->ventilation_levels_[1] : 0,
-          supply ? this->ventilation_levels_[3] : 0,
-          supply ? this->ventilation_levels_[5] : 0,
-          exhaust ? this->ventilation_levels_[6] : 0,
-          supply ? this->ventilation_levels_[7] : 0,
-          0x00
+          exhaust ? this->ventilation_levels_[0] : (uint8_t) 0,
+          exhaust ? this->ventilation_levels_[2] : (uint8_t) 0,
+          exhaust ? this->ventilation_levels_[4] : (uint8_t) 0,
+          supply ? this->ventilation_levels_[1] : (uint8_t) 0,
+          supply ? this->ventilation_levels_[3] : (uint8_t) 0,
+          supply ? this->ventilation_levels_[5] : (uint8_t) 0,
+          exhaust ? this->ventilation_levels_[6] : (uint8_t) 0,
+          supply ? this->ventilation_levels_[7] : (uint8_t) 0,
+          (uint8_t) 0
       };
       this->write_command_(COMFOAIR_SET_VENTILATION_LEVEL_REQUEST, command_data, sizeof(command_data));
     }
+  }
+
+  void control_reset_filter() {
+    ESP_LOGI(TAG, "Reset filter service called");
+    uint8_t reset_cmd[COMFOAIR_SET_RESET_LENGTH] = {0, 0, 0, 1};
+    this->write_command_(COMFOAIR_SET_RESET_REQUEST, reset_cmd, sizeof(reset_cmd));
   }
 
   // Poll every second
@@ -247,7 +254,13 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
 
   void update() override {
     uint8_t command[COMFOAIR_SET_RS232_MODE_LENGTH] = {COMFOAIR_SET_RS232_MODE_PC_MASTER};
+    //uint8_t command_levels [COMFOAIR_SET_VENTILATION_LEVEL_LENGTH] = {(uint8_t) 24,(uint8_t) 43, (uint8_t) 68, (uint8_t) 26, (uint8_t) 47, (uint8_t) 74, (uint8_t) 91, (uint8_t) 100, (uint8_t) 0};
+    uint8_t command_levels [COMFOAIR_SET_VENTILATION_LEVEL_LENGTH] = {(uint8_t) 0x18,(uint8_t) 0x2B, (uint8_t) 0x43, (uint8_t) 0x1A, (uint8_t) 0x2E, (uint8_t) 0x4A, (uint8_t) 0x5B, (uint8_t) 0x64, (uint8_t) 0x00};
+
     switch(update_counter_) {
+      case -5:
+        this->write_command_(COMFOAIR_SET_VENTILATION_LEVEL_REQUEST, command_levels, sizeof(command_levels));
+        break;
       case -4:
         this->write_command_(COMFOAIR_SET_RS232_MODE_REQUEST, command, sizeof(command));
         break;
@@ -313,11 +326,6 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
   }
 
   float get_setup_priority() const override { return setup_priority::DATA; }
-  
-  void reset_filter(void) {
-    uint8_t reset_cmd[COMFOAIR_SET_RESET_LENGTH] = {0, 0, 0, 1};
-    this->write_command_(COMFOAIR_SET_RESET_REQUEST, reset_cmd, sizeof(reset_cmd));
-  }
 
  protected:
   void set_level_(int level) {
@@ -649,20 +657,14 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
   }
 
   void get_bypass_control_status_() {
-    if (this->bypass_factor != nullptr ||
-       this->bypass_step != nullptr ||
-       this->bypass_correction != nullptr ||
-       this->is_summer_mode != nullptr) {
+    if (this->bypass_factor != nullptr || this->bypass_step != nullptr || this->bypass_correction != nullptr || this->is_summer_mode != nullptr) {
       ESP_LOGD(TAG, "getting bypass control");
       this->write_command_(COMFOAIR_GET_BYPASS_CONTROL_REQUEST, nullptr, 0);
     }
   }
 
   void get_temperature_() {
-    if (this->outside_air_temperature != nullptr ||
-       this->supply_air_temperature != nullptr ||
-       this->return_air_temperature != nullptr ||
-       this->outside_air_temperature != nullptr) {
+    if (this->outside_air_temperature != nullptr || this->supply_air_temperature != nullptr || this->return_air_temperature != nullptr || this->outside_air_temperature != nullptr) {
       ESP_LOGD(TAG, "getting temperature");
       this->write_command_(COMFOAIR_GET_TEMPERATURE_REQUEST, nullptr, 0);
     }
@@ -695,7 +697,7 @@ class ComfoAirComponent : public climate::Climate, public CustomAPIDevice, Polli
 
   uint8_t data_[30];
   uint8_t data_index_{0};
-  int8_t update_counter_{-4};
+  int8_t update_counter_{-5};
   uint8_t ventilation_levels_[8];
 
   uint8_t bootloader_version_[13]{0};

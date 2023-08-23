@@ -9,7 +9,9 @@ Changes in this fork:
    - added `set_object_id` and `set_name` for all sensors e.g.
      `ca->return_air_level->set_object_id("Comfoair Return Air Level");`
 		 `ca->return_air_level->set_name("Comfoair Return Air Level");`
-1. Added four Dallas Temperature Sensors because internal ones failed several times because of corroded contacts. 
+1. Added four Dallas Temperature Sensors because internal ones failed several times because of corroded contacts.
+1. Added Home Assistant Service to reset the filter timer in the comfoair
+1. Added "setting default levels" at ESP32 startup. Otherwise, if the esp gets restarted or reflashed in e.g. extract only mode, the levels are lost because they got set to 0.
 		 
 ## Building the thing
 
@@ -83,7 +85,9 @@ My comfoair settings after the air volume flow measurements
 
 
 ## Home Assistant Template Sensor for Temperature Difference Alarm
-The ComfoAir temperature sensors were experiencing problems due to corroded contacts. The problem was solved by loosening and retightening the temperature sensor cables on the circuit board.
+The ComfoAir temperature sensors were experiencing problems due to corroded contacts. This was bad, because the bypass never opened because of that...
+
+The problem was solved by loosening and retightening the temperature sensor cables on the circuit board.
 
 In order to detect faulty sensors in the future, four more temperature sensors were installed in parallel with the existing ones so that the values can be compared with the following template. 
 
