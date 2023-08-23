@@ -83,6 +83,15 @@ My comfoair settings after the air volume flow measurements
 | Supply Ventilator  |       26%      |           47%          |            74%            |            100%           |
 | Exhaust Ventilator |       24%      |           43%          |            68%            |            91%            |
 
+## Power consumption
+
+| Stage | Off/Unoccupied | Stage 1 (normal level) | Stage 2 (increased level) | Stage 3 (intensive level) |
+|---|:---:|:---:|:---:|:---:|
+| Supply and Extract Fan | 15 W | 36 W | 109 W | 220 W |
+| Supply Fan only | 11 W | 22 W | 60 W | 122 W |
+| Exhaust Fan only | 11W | 21 W | 53W | 104 W |
+
+![power_consumption](doc/power_consumption.PNG)
 
 ## Home Assistant Template Sensor for Temperature Difference Alarm
 The ComfoAir temperature sensors were experiencing problems due to corroded contacts. This was bad, because the bypass never opened because of that...
