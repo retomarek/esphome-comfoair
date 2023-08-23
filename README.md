@@ -125,150 +125,340 @@ template:
 ![dashboard-visu](dashboard-visu/dashboard_visu.PNG)
 
 ```yaml
-type: picture-elements
-image: local/comfoair/base.png
-elements:
-  - type: state-label
-    entity: sensor.ca350_fanex_perc
-    style:
-      top: 83%
-      left: 25%
-      color: black
-  - type: state-label
-    entity: sensor.ca350_fansu_perc
-    style:
-      top: 83%
-      left: 75%
-      color: black
-  - type: state-label
-    entity: sensor.ca350_return_temp
-    style:
-      top: 24%
-      left: 97%
-      color: darkred
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_ventilation_temp_abl_esp8266
-    style:
-      top: 31%
-      left: 97%
-      color: lightgrey
-      transform: translate(-100%, -50%)
-    transform: none
-  - type: state-label
-    entity: sensor.central_aqual
-    style:
-      top: 57%
-      left: 99%
-      color: darkorange
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_temp
-    style:
-      top: 49%
-      left: 97%
-      color: darkred
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.ca350_supply_temp
-    style:
-      top: 70%
-      left: 97%
-      color: darkred
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_ventilation_temp_zul_esp8266
-    style:
-      top: 77%
-      left: 97%
-      color: lightgrey
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.ca350_outside_temp
-    style:
-      top: 24%
-      left: 19%
-      color: '#4171b1'
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_ventilation_temp_aul_esp8266
-    style:
-      top: 31%
-      left: 19%
-      color: lightgrey
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_outside_temp
-    style:
-      top: 49%
-      left: 19%
-      color: '#4171b1'
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.ca350_exhaust_temp
-    style:
-      top: 70%
-      left: 19%
-      color: '#4171b1'
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: sensor.central_ventilation_temp_fol_esp8266
-    style:
-      top: 77%
-      left: 19%
-      color: lightgrey
-      transform: translate(-100%, -50%)
-  - type: state-label
-    entity: binary_sensor.ca350_summer_mode
-    prefix: 'Summer Mode: '
-    style:
-      top: 8%
-      left: 15%
-      color: black
-  - type: state-label
-    entity: binary_sensor.ca350_bypass_open
-    prefix: 'Bypass: '
-    style:
-      top: 8%
-      left: 50%
-      color: black
-  - type: state-label
-    entity: climate.comfoair_350
-    attribute: temperature
-    prefix: 'Cmf Temp: '
-    suffix: ' °C'
-    style:
-      top: 8%
-      left: 82%
-      color: black
-  - type: state-label
-    entity: climate.comfoair_350
-    attribute: fan_mode
-    style:
-      top: 32%
-      left: 50%
-      color: darkred
-  - type: state-label
-    entity: sensor.central_ventilation_heat_recovery_coefficient
-    prefix: 'Recovery Efficiency: '
-    style:
-      top: 88%
-      left: 50%
-      color: black
-  - type: state-label
-    entity: sensor.air_filter_days_remaining
-    prefix: 'Filterchange in '
-    style:
-      top: 95%
-      left: 70%
-      color: black
-  - type: state-label
-    entity: binary_sensor.ca350_filter
-    prefix: 'Filterstatus: '
-    style:
-      top: 95%
-      left: 30%
-      color: black
-
+title: Overview
+type: vertical-stack
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: input_select.central_ventilation_mode
+        name: Auto
+        icon: mdi:fan-auto
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            option: Auto
+            entity_id: input_select.central_ventilation_mode
+        show_icon: true
+        show_name: false
+        state:
+          - value: Auto
+            operator: '!='
+            color: var(--background-color)
+        color_type: card
+        color: var(--primary-color)
+      - type: custom:button-card
+        entity: input_select.central_ventilation_mode
+        name: Absent
+        icon: mdi:fan-minus
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            option: Absent
+            entity_id: input_select.central_ventilation_mode
+        show_icon: true
+        show_name: false
+        state:
+          - value: Absent
+            operator: '!='
+            color: var(--background-color)
+        color_type: card
+        color: var(--primary-color)
+      - type: custom:button-card
+        entity: input_select.central_ventilation_mode
+        name: Stage 1
+        icon: mdi:fan-speed-1
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            option: Stage 1
+            entity_id: input_select.central_ventilation_mode
+        show_icon: true
+        show_name: false
+        state:
+          - value: Stage 1
+            operator: '!='
+            color: var(--background-color)
+        color_type: card
+        color: var(--primary-color)
+      - type: custom:button-card
+        entity: input_select.central_ventilation_mode
+        name: Stage 2
+        icon: mdi:fan-speed-2
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            option: Stage 2
+            entity_id: input_select.central_ventilation_mode
+        show_icon: true
+        show_name: false
+        state:
+          - value: Stage 2
+            operator: '!='
+            color: var(--background-color)
+        color_type: card
+        color: var(--primary-color)
+      - type: custom:button-card
+        entity: input_select.central_ventilation_mode
+        name: Stage 3
+        icon: mdi:fan-speed-3
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            option: Stage 3
+            entity_id: input_select.central_ventilation_mode
+        show_icon: true
+        show_name: false
+        state:
+          - value: Stage 3
+            operator: '!='
+            color: var(--background-color)
+        color_type: card
+        color: var(--primary-color)
+  - type: picture-elements
+    image: local/comfoair/base.png
+    elements:
+      - type: state-label
+        entity: sensor.ca350_fanex_perc
+        style:
+          top: 83%
+          left: 25%
+          color: black
+      - type: state-label
+        entity: sensor.ca350_fansu_perc
+        style:
+          top: 83%
+          left: 75%
+          color: black
+      - type: state-label
+        entity: sensor.ca350_return_temp
+        style:
+          top: 24%
+          left: 97%
+          color: darkred
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_ventilation_temp_abl_esp8266
+        style:
+          top: 31%
+          left: 97%
+          color: lightgrey
+          transform: translate(-100%, -50%)
+        transform: none
+      - type: state-label
+        entity: sensor.central_aqual
+        style:
+          top: 57%
+          left: 99%
+          color: darkorange
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_temp
+        style:
+          top: 49%
+          left: 97%
+          color: darkred
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.ca350_supply_temp
+        style:
+          top: 70%
+          left: 97%
+          color: darkred
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_ventilation_temp_zul_esp8266
+        style:
+          top: 77%
+          left: 97%
+          color: lightgrey
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.ca350_outside_temp
+        style:
+          top: 24%
+          left: 19%
+          color: '#4171b1'
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_ventilation_temp_aul_esp8266
+        style:
+          top: 31%
+          left: 19%
+          color: lightgrey
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_outside_temp
+        style:
+          top: 49%
+          left: 19%
+          color: '#4171b1'
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.ca350_exhaust_temp
+        style:
+          top: 70%
+          left: 19%
+          color: '#4171b1'
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: sensor.central_ventilation_temp_fol_esp8266
+        style:
+          top: 77%
+          left: 19%
+          color: lightgrey
+          transform: translate(-100%, -50%)
+      - type: state-label
+        entity: binary_sensor.ca350_summer_mode
+        prefix: 'Summer Mode: '
+        style:
+          top: 8%
+          left: 15%
+          color: black
+      - type: state-label
+        entity: binary_sensor.ca350_bypass_open
+        prefix: 'Bypass: '
+        style:
+          top: 8%
+          left: 50%
+          color: black
+      - type: state-label
+        entity: climate.comfoair_350
+        attribute: temperature
+        prefix: 'Cmf Temp: '
+        suffix: ' °C'
+        style:
+          top: 8%
+          left: 82%
+          color: black
+      - type: state-label
+        entity: climate.comfoair_350
+        attribute: fan_mode
+        style:
+          top: 32%
+          left: 50%
+          color: darkred
+      - type: state-label
+        entity: sensor.central_ventilation_heat_recovery_coefficient
+        prefix: 'Recovery Efficiency: '
+        style:
+          top: 88%
+          left: 50%
+          color: black
+      - type: state-label
+        entity: sensor.air_filter_days_remaining
+        prefix: 'Filterchange in '
+        style:
+          top: 95%
+          left: 70%
+          color: black
+      - type: state-label
+        entity: binary_sensor.ca350_filter
+        prefix: 'Filterstatus: '
+        style:
+          top: 95%
+          left: 30%
+          color: black
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: esphome.central_comfoair_climate_set_operation_mode
+          target: {}
+          data:
+            exhaust_fan: true
+            supply_fan: false
+        icon: mdi:home-export-outline
+        name: Exhaust only
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: esphome.central_comfoair_climate_set_operation_mode
+          target: {}
+          data:
+            exhaust_fan: false
+            supply_fan: true
+        icon: mdi:home-import-outline
+        name: Supply only
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: esphome.central_comfoair_climate_set_operation_mode
+          target: {}
+          data:
+            exhaust_fan: true
+            supply_fan: true
+        icon: mdi:home-outline
+        name: Supply and Exhaust
 ```
 
+```yaml
+type: vertical-stack
+title: Current state
+cards:
+  - type: glance
+    entities:
+      - entity: input_select.central_ventilation_mode
+        name: Current
+      - entity: input_select.central_ventilation_auto
+        name: Auto
+      - entity: sensor.ventilation_power
+        name: Power
+        icon: mdi:lightning-bolt-outline
+      - entity: sensor.central_aqual
+        name: CO2
+      - entity: binary_sensor.central_ventilation_temperature_sensor_error
+        name: Diff
+    show_name: true
+    show_state: true
+    show_icon: true
+    state_color: false
+```
+
+```yaml
+type: vertical-stack
+title: Purge
+cards:
+  - type: horizontal-stack
+    cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: script.central_ventilation_purge_start_stage_2
+          service_data: {}
+        name: 30min - Stage 2
+        icon: mdi:clock-fast
+      - type: button
+        tap_action:
+          action: call-service
+          service: script.central_ventilation_purge_start_stage_3
+          service_data: {}
+        name: 30min - Stage 3
+        icon: mdi:clock-fast
+      - type: button
+        tap_action:
+          action: call-service
+          service: script.central_ventilation_purge_cancel_timer
+          service_data: {}
+        name: Stop Purge
+        icon: mdi:stop
+  - type: entities
+    entities:
+      - entity: timer.ventilation_purge
+        name: Timer
+
+```
