@@ -83,7 +83,9 @@ My comfoair settings after the air volume flow measurements
 
 
 ## Home Assistant Template Sensor for Temperature Difference Alarm
-The ComfoAir temperature sensors were experiencing problems due to corroded contacts. The problem was solved by loosening and retightening the temperature sensor cables on the circuit board. In order to detect faulty sensors in the future, four more temperature sensors were installed in parallel with the existing ones so that the values can be compared with the following template. 
+The ComfoAir temperature sensors were experiencing problems due to corroded contacts. The problem was solved by loosening and retightening the temperature sensor cables on the circuit board.
+
+In order to detect faulty sensors in the future, four more temperature sensors were installed in parallel with the existing ones so that the values can be compared with the following template. 
 
 ```yaml
 # Temperature Sensor Error Ventilation (if difference between sensors is detected)
