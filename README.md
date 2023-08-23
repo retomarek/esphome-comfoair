@@ -59,18 +59,18 @@ Procedure
 4. measure again, adjust the restrictors again
 
 Findings from my flat
-- Disbalance between exhaust and supply air either too high or too low per room (there should be a constant small overpressure, i.e. the supply air fan should bring in more air than the exhaust air fan).
+- Disbalance between exhaust and supply air either too high or too low per room (there should be a constant small overpressure, i.e. the supply air fan should bring in more air than the exhaust air fan)
 - little air flows from kitchen into bedroom, bad because of taste transfer
-- Sleeping room has far too little air at level 1, living room also has relatively little, children's room and office rather a lot because these rooms are close to the ventilation unit and the pipes are short.
-- WC/shower has too little air, 35m3/h should be because of the washing machine/tumbler.
+- Sleeping room has far too little air at stage 1, living room also has relatively little, children's room and office rather a lot because these rooms are close to the ventilation unit and the ducts are short
+- Toilet/Shower has too little air, 35m3/h should be because of the washing machine/tumbler
 
 ![before air volumen balancing](doc/before.png)
 
-In order to set the volume flows correctly, I rented a [flow anemometer, e.g.](https://www.woehler.de/services/aktuelles/presse/artikel/damit-die-anlage-so-funktioniert-wie-sie-soll-volumenstroeme-fachmaennisch-einstellen/) and installed these [flow restrictors](https://www.luftladen.com/luftmengendrossel-967/).
+In order to set the volume flows correctly, I rented a [flow anemometer, e.g.](https://www.woehler.de/services/aktuelles/presse/artikel/damit-die-anlage-so-funktioniert-wie-sie-soll-volumenstroeme-fachmaennisch-einstellen/) and installed these [flow restrictors](https://www.luftladen.com/luftmengendrossel-967/)
 
 ![Luftmengendrossel](doc/luftmengendrossel.jpg)
 
-After a time-consuming series of measurements, I was able to achieve the required volume flows, which should actually have already been present when the house was commissioned...
+After a time-consuming series of measurements, I was able to achieve the required volume flows (which should actually have already been present when the house was commissioned...)
 
 ![after air volumen balancing](doc/after.png)
 
