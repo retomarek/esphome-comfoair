@@ -107,7 +107,7 @@ template:
 
 ## Dashboard Visualization
 
-![](doc/dashboard_visu.png)
+![dashboard-visu](doc/dashboard_visu.png)
 
 ```yaml
 type: picture-elements
