@@ -46,7 +46,43 @@ To perform flashing, I had to connect both boards and plug the USB cable into th
 
 The final installation only includes the lower board.
 
-### Home Assistant Template Sensor for Temperature Difference Alarm
+
+## Air volume balancing
+To ensure that each room receives the correct amount of air, volume flow balancing is essential. Unfortunately, this adjustment is carried out correctly in very few cases.
+
+The document [KwlLüftunsmessungenWohnung.xlsx](doc/KwlLüftunsmessungenWohnung.xlsx) includes some thoughts about the correct volume air flow rates for my appartment. The values are from this book [Komfortlüftung in Wohngebäuden, Heinrich Huber](https://www.orellfuessli.ch/shop/home/artikeldetails/A1036104051).
+
+Procedure
+1. define plan/target values for each room
+2. measure the current volume flow
+3. installation of flow restrictors
+4. measure again, adjust the restrictors again
+
+Findings from my flat
+- Disbalance between exhaust and supply air either too high or too low per room (there should be a constant small overpressure, i.e. the supply air fan should bring in more air than the exhaust air fan).
+- little air flows from kitchen into bedroom, bad because of taste transfer
+- Sleeping room has far too little air at level 1, living room also has relatively little, children's room and office rather a lot because these rooms are close to the ventilation unit and the pipes are short.
+- WC/shower has too little air, 35m3/h should be because of the washing machine/tumbler.
+
+![before air volumen balancing](doc/before.png)
+
+In order to set the volume flows correctly, I rented a [flow anemometer, e.g.](https://www.woehler.de/services/aktuelles/presse/artikel/damit-die-anlage-so-funktioniert-wie-sie-soll-volumenstroeme-fachmaennisch-einstellen/) and installed these [flow restrictors](https://www.luftladen.com/luftmengendrossel-967/).
+
+![Luftmengendrossel](doc/luftmengendrossel.jpg)
+
+After a time-consuming series of measurements, I was able to achieve the required volume flows, which should actually have already been present when the house was commissioned...
+
+![after air volumen balancing](doc/after.png)
+
+My comfoair settings after the air volume flow measurements
+
+| Stage              | Off/Unoccupied | Stage 1 (normal level) | Stage 2 (increased level) | Stage 3 (intensive level) |
+|--------------------|:--------------:|:----------------------:|:-------------------------:|:-------------------------:|
+| Supply Ventilator  |       26%      |           47%          |            74%            |            100%           |
+| Exhaust Ventilator |       24%      |           43%          |            68%            |            91%            |
+
+
+## Home Assistant Template Sensor for Temperature Difference Alarm
 The ComfoAir temperature sensors were experiencing problems due to corroded contacts. The problem was solved by loosening and retightening the temperature sensor cables on the circuit board. In order to detect faulty sensors in the future, four more temperature sensors were installed in parallel with the existing ones so that the values can be compared with the following template. 
 
 ```yaml
