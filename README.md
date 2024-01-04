@@ -52,7 +52,11 @@ The final installation only includes the lower board.
 ## Air volume balancing
 To ensure that each room receives the correct amount of air, volume flow balancing is essential. Unfortunately, this adjustment is carried out correctly in very few cases.
 
-The document [KwlLüftunsmessungenWohnung.xlsx](doc/KwlLüftunsmessungenWohnung.xlsx) includes some thoughts about the correct volume air flow rates for my appartment. The values are from this book [Komfortlüftung in Wohngebäuden, Heinrich Huber](https://www.orellfuessli.ch/shop/home/artikeldetails/A1036104051).
+[CO2_SIM_5.3.xlsx](doc/CO2_SIM_5.3.xlsx) from [raumluft.org](http://raumluft.linux47.webhome.at/rlt-anlagen/co2-rechner/) is an Excel tool designed for simulating CO2 concentrations in indoor spaces such as offices and bedrooms.
+The program allows estimation of CO2 levels based on input parameters like windows, ventilation rates and occupancy etc., facilitating the development of ventilation strategies.
+While it provides conservative estimates of CO2 concentrations, variations in room air exchange over time suggest that the results should be considered as rough approximations.
+
+The excel document [KwlLüftunsmessungenWohnung.xlsx](doc/KwlLüftunsmessungenWohnung.xlsx) includes some thoughts about the correct volume air flow rates for my appartment. The values are from this book [Komfortlüftung in Wohngebäuden, Heinrich Huber](https://www.orellfuessli.ch/shop/home/artikeldetails/A1036104051).
 
 Procedure
 1. define plan/target values for each room
